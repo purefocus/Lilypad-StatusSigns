@@ -49,7 +49,7 @@ public class SetSignCommand implements CommandExecutor
 				player.sendMessage("Please specify a server! /setstatus <server>");
 			}
 		}
-		return false;
+		return true;
 	}
 	
 }
