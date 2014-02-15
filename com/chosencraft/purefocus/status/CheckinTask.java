@@ -17,65 +17,68 @@ import lilypad.client.connect.api.request.impl.MessageRequest;
 
 public class CheckinTask implements TRunnable
 {
-
+	
 	private ServerStatus status;
 	private BukkitTask task;
-
+	
 	public CheckinTask(ServerStatus status)
 	{
 		this.status = status;
 		task = Bukkit.getScheduler().runTaskTimerAsynchronously(status, this, 1, Config.REFRESH_RATE);
 	}
-
+	
 	/**
 	 * Stops the task
 	 */
-
+	
 	public void stop()
 	{
 		task.cancel();
 	}
-
+	
 	/**
 	 * Converts player count and max players into a byte array to send as a
 	 * message
 	 */
-
+	
 	@Override
 	public void run()
 	{
-
+		
 		Connect connect = status.getConnect();
-
-		byte[] motd_bytes = Bukkit.getMotd().getBytes();
-
-		byte[] data = new byte[motd_bytes.length + 4];
-
-		int count = Bukkit.getOnlinePlayers().length;
-		data[0] = (byte) (count & 0x7f);
-		data[1] = (byte) ((count >> 7) & 0x7f);
-
-		int maxCount = Bukkit.getMaxPlayers();
-		data[2] = (byte) (maxCount & 0x7f);
-		data[3] = (byte) ((maxCount >> 7) & 0x7f);
-		try
+		if (connect.isConnected())
 		{
-			for (int i = 4; i < data.length; i++)
+			byte[] motd_bytes = Bukkit.getMotd().getBytes();
+			
+			byte[] data = new byte[motd_bytes.length + 4];
+			
+			int count = Bukkit.getOnlinePlayers().length;
+			data[0] = (byte) (count & 0x7f);
+			data[1] = (byte) ((count >> 7) & 0x7f);
+			
+			int maxCount = Bukkit.getMaxPlayers();
+			data[2] = (byte) (maxCount & 0x7f);
+			data[3] = (byte) ((maxCount >> 7) & 0x7f);
+			try
 			{
-				data[i] = motd_bytes[i - 4];
+				for (int i = 4; i < data.length; i++)
+				{
+					data[i] = motd_bytes[i - 4];
+				}
 			}
-		} catch (Exception e)
-		{
-			System.out.printf("%d, %d", motd_bytes.length, data.length);
+			catch (Exception e)
+			{
+				System.out.printf("%d, %d", motd_bytes.length, data.length);
+			}
+			
+			try
+			{
+				connect.request(new MessageRequest(Config.SERVERS, "pfs", data));
+			}
+			catch (RequestException e)
+			{
+			}
 		}
-
-		try
-		{
-			connect.request(new MessageRequest(Config.SERVERS, "pfs", data));
-		} catch (RequestException e)
-		{
-			e.printStackTrace();
-		}
-
+		
 	}
 }
