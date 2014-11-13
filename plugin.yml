@@ -2,7 +2,7 @@ main: com.chosencraft.purefocus.status.ServerStatus
 name: ServerStatus
 author: purefocus
 version: 1.0
-depent: [Connect-API]
+depend: [Bukkit-Connect]
 commands:
   setstatus:
     usage: /<command>
